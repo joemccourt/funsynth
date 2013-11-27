@@ -2,8 +2,10 @@
 var FS = {};
 FS.canvasID = "#funCanvas";
 FS.dirtyCanvas = true;
+FS.lastFrameTime = 0;
+FS.mousePos = {'x':0.5,'y':0.5};
 
-FS.main = function(){
+FS.main = function() {
 	FS.startSession();
 
 	requestNextAnimationFrame(FS.gameLoop);
@@ -11,24 +13,25 @@ FS.main = function(){
 
 window.onload = FS.main;
 
-FS.startSession = function(){
+FS.startSession = function() {
 	FS.canvas = $(FS.canvasID)[0];
 	FS.ctx = FS.canvas.getContext("2d");
 
 	// FS.setLevelRenderBox();
 	// FS.loadGameState();
-	// FS.resizeToFit();
+	FS.resizeToFit();
 
 	FS.dirtyCanvas = true;
-	// FS.initEvents();
+	FS.initEvents();
 };
 
-FS.gameLoop = function(time){
+FS.gameLoop = function(time) {
 	var ctx = FS.ctx;
 
 	if(FS.dirtyCanvas){
-		FS.dirtyCanvas = false;
-		// FS.drawGame(drawGameParams);
+		// FS.dirtyCanvas = false;
+		FS.drawClear();
+		FS.drawFun(time);
 	}
 
 	requestNextAnimationFrame(FS.gameLoop);
@@ -37,6 +40,37 @@ FS.gameLoop = function(time){
 	FS.lastFrameTime = time;
 };
 
+FS.mousemove = function(x,y){
+	var w = FS.canvas.width;
+	var h = FS.canvas.height;
+
+	FS.mousePos = {'x':x/w,'y':y/h};
+}
+
+FS.resizeToFit = function(){
+	var w = $(window).width();
+	var h = $(window).height();
+
+	FS.canvas.width  = w;
+	FS.canvas.height = h;
+
+	FS.dirtyCanvas = true;
+};
+
+// *** Event binding *** //
+FS.initEvents = function(){
+	$(window).resize(function(){
+		FS.resizeToFit();
+	});
+
+	$(window).mousemove(function (e) {
+		var offset = $(FS.canvasID).offset();
+		var x = e.pageX - offset.left;
+		var y = e.pageY - offset.top;
+
+		FS.mousemove(x,y);
+	});
+};
 
 // *** LocalStorage Check ***
 function supports_html5_storage() {
