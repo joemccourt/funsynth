@@ -75,14 +75,23 @@ FS.drawNode = function(module) {
 	ctx.stroke();
 	ctx.fill();
 
-
 	var height = 0.4*Math.min(w*b.w,h*b.h);
 	ctx.textAlign = "center";
 	ctx.textBaseline = "middle";
 	ctx.font = height + "px Lucida Console";
 	ctx.fillStyle = 'black';
-	ctx.fillText(module.name,(b.x+b.w/2)*w,(b.y+b.h/2)*h);
+	ctx.fillText(module.name + ": " + module.value.toPrecision(4),(b.x+b.w/2)*w,(b.y+b.h/2)*h);
 
+
+	if(module.children){
+		for(var i = 0; i < module.children.length; i++){
+			ctx.beginPath();
+			var b2 = module.children[i].box;
+			ctx.moveTo((b.x+b.w/2)*w,(b.y+b.h/2)*h);
+			ctx.lineTo((b2.x+b2.w/2)*w,(b2.y+b2.h/2)*h);
+			ctx.stroke();
+		}
+	}
 	ctx.restore();
 };
 
@@ -91,7 +100,7 @@ FS.drawModules = function() {
 	for(var i = 0; i < FS.modules.length; i++){
 		var m = FS.modules[i];
 
-		if(m.type == 'node'){
+		if(m.type == 'node' || m.type == 'input'){
 			FS.drawNode(m);
 		}else if(m.type == 'funDisplay'){
 			FS.drawFun(m);

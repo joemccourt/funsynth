@@ -12,42 +12,12 @@ FS.time = 0;
 
 FS.maxZIndex = 100;
 
-FS.modules = [
-	{
-		'type': 'node',
-		'box': {x:0.1,y:0.1,w:0.4,h:0.1},
-		'fillStyle': 'rgb(200,150,200)',
-		'name': 'sin(x)',
-		'eval': function(p){Math.sin(p.x);},
-		'z-index': 3
-	},
+FS.modules = [];
 
-	{
-		'type': 'node',
-		'box': {x:0.6,y:0.1,w:0.25,h:0.1},
-		'fillStyle': 'rgb(150,150,50)',
-		'name': 'cos(x)',
-		'eval': function(p){Math.cos(p.x);},
-		'z-index': 0
-	},
-
-	{
-		'type': 'node',
-		'box': {x:0.4,y:0.8,w:0.25,h:0.1},
-		'fillStyle': 'rgb(50,150,150)',
-		'name': 'PI',
-		'eval': function(){Math.PI;},
-		'z-index': 2
-	},
-
-	{
-		'type': 'funDisplay',
-		'box': {x:0.25,y:0.25,w:0.5,h:0.5},
-		'name': 'demoFunction',
-		'eval': function(params){return params.amp*Math.sin(params.x*Math.PI*2*params.freq+params.t);},
-		'z-index': 1
-	}
-];
+FS.addModule = function(moduleName) {
+	FS.modules.push(moduleName);
+	FS.reorderModules();
+};
 
 FS.main = function() {
 	FS.startSession();
@@ -69,6 +39,107 @@ FS.startSession = function() {
 
 	FS.dirtyCanvas = true;
 	FS.initEvents();
+
+
+//Prototype module assembly
+var moduleDisplay = {
+		'type': 'funDisplay',
+		'box': {x:0.25,y:0.25,w:0.5,h:0.5},
+		'name': 'demoFunction',
+		'eval': function(p){return p.x;},
+		'z-index': 1
+	};
+
+FS.addModule(moduleDisplay);
+
+var moduleInputX = {
+		'type': 'input',
+		'box': {x:0.65,y:0.25,w:0.2,h:0.1},
+		'fillStyle': 'rgb(200,150,50)',
+		'name': 'x',
+		'z-index': 1
+	};
+
+FS.addModule(moduleInputX);
+
+var moduleInputT = {
+		'type': 'input',
+		'box': {x:0.15,y:0.25,w:0.2,h:0.1},
+		'fillStyle': 'rgb(200,50,200)',
+		'name': 't',
+		'z-index': 1
+	};
+
+FS.addModule(moduleInputT);
+
+var moduleSin = {
+		'type': 'node',
+		'box': {x:0.1,y:0.1,w:0.2,h:0.1},
+		'fillStyle': 'rgb(200,150,200)',
+		'name': 'sin(x)',
+		'eval': function(p){return Math.sin(p.x);},
+		'z-index': 3
+	};
+
+FS.addModule(moduleSin);
+moduleDisplay.children = [moduleSin];
+
+// var moduleCos = {
+// 		'type': 'node',
+// 		'box': {x:0.6,y:0.1,w:0.25,h:0.1},
+// 		'fillStyle': 'rgb(150,150,50)',
+// 		'name': 'cos(x)',
+// 		'eval': function(p){return Math.cos(p.x);},
+// 		'z-index': 0
+// 	};
+
+var moduleAdd = {
+		'type': 'node',
+		'box': {x:0.2,y:0.3,w:0.2,h:0.1},
+		'fillStyle': 'rgb(250,150,250)',
+		'name': 'x+y',
+		'eval': function(p){return p.x+p.y;},
+		'z-index': 7
+	};
+
+FS.addModule(moduleAdd);
+moduleSin.children = [moduleAdd];
+
+var moduleMul = {
+		'type': 'node',
+		'box': {x:0.6,y:0.3,w:0.2,h:0.1},
+		'fillStyle': 'rgb(250,150,150)',
+		'name': 'x*y',
+		'eval': function(p){return p.x*p.y;},
+		'z-index': 5
+	};
+
+FS.addModule(moduleMul);
+
+var modulePI = {
+		'type': 'node',
+		'box': {x:0.4,y:0.8,w:0.25,h:0.1},
+		'fillStyle': 'rgb(50,150,150)',
+		'name': 'PI',
+		'eval': function(){return Math.PI;},
+		'z-index': 2
+	};
+
+FS.addModule(modulePI);
+moduleAdd.children = [moduleMul, moduleInputT];
+moduleMul.children = [modulePI, moduleInputX];
+
+	// {
+	// 	'type': 'input',
+	// 	'box': {x:0.3,y:0.4,w:0.2,h:0.1},
+	// 	'fillStyle': 'rgb(250,150,250)',
+	// 	'name': 'x',
+	// 	'eval': function(p){return p.x+p.y;},
+	// 	'z-index': 9
+	// },
+
+// parent.children;
+
 };
 
 

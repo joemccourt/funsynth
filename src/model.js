@@ -30,9 +30,29 @@ FS.getFunValues = function(fun, inputData) {
 		for(var i = 0; i < numPoints; i++){
 
 			variables[independentVar] = range[0] + i * (range[1]-range[0]) / (numPoints-1);
-			funValues[i] = fun.eval(variables);
+			funValues[i] = FS.evalModule(fun,variables);//fun.eval(variables);
 		}
 	}
 
 	return funValues;
+};
+
+FS.evalModule = function(module,variables){
+	if(module.type == "input"){
+		module.value = variables[module.name];
+	}else{
+		if(module.children){
+			if(module.children.length == 2){
+				var c1 = module.children[0];
+				var c2 = module.children[1];
+				module.value = module.eval({x:FS.evalModule(c1,variables),y:FS.evalModule(c2,variables)});
+			}else if(module.children.length == 1){
+				var c1 = module.children[0];
+				module.value = module.eval({x:FS.evalModule(c1,variables)});
+			}
+		}else{
+			module.value = module.eval();
+		}
+	}
+	return module.value;
 };
