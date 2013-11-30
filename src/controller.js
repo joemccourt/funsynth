@@ -44,10 +44,11 @@ FS.startSession = function() {
 //Prototype module assembly
 var moduleDisplay = {
 		'type': 'funDisplay',
-		'box': {x:0.25,y:0.25,w:0.5,h:0.5},
+		'box': {x:0.25,y:0.25,w:0.3,h:0.2},
+		'fillStyle': 'rgb(255,200,200)',
 		'name': 'demoFunction',
 		'eval': function(p){return p.x;},
-		'z-index': 1
+		'z-index': 2
 	};
 
 FS.addModule(moduleDisplay);

@@ -31,7 +31,7 @@ FS.drawFun = function(module) {
 	ctx.fillStyle = 'black';
 	ctx.joinCap = 'round';
 
-	ctx.fillStyle = 'rgba(100,200,100,0.6)';
+	ctx.fillStyle = module.fillStyle;
 	
 	var b = module.box;
 	ctx.beginPath();
@@ -80,22 +80,41 @@ FS.drawNode = function(module) {
 	ctx.textBaseline = "middle";
 	ctx.font = height + "px Lucida Console";
 	ctx.fillStyle = 'black';
-	ctx.fillText(module.name + ": " + module.value.toPrecision(4),(b.x+b.w/2)*w,(b.y+b.h/2)*h);
 
+	if(typeof module.value === "number"){
+		ctx.fillText(module.name + ": " + module.value.toPrecision(4),(b.x+b.w/2)*w,(b.y+b.h/2)*h);
+	}
 
-	if(module.children){
-		for(var i = 0; i < module.children.length; i++){
-			ctx.beginPath();
-			var b2 = module.children[i].box;
-			ctx.moveTo((b.x+b.w/2)*w,(b.y+b.h/2)*h);
-			ctx.lineTo((b2.x+b2.w/2)*w,(b2.y+b2.h/2)*h);
-			ctx.stroke();
+	ctx.restore();
+};
+
+FS.drawEdges = function() {
+	var ctx = FS.ctx;
+	ctx.save();
+
+	var w = FS.canvas.width;
+	var h = FS.canvas.height;
+
+	for(var i = 0; i < FS.modules.length; i++){
+		var m = FS.modules[i];
+		var b = m.box;
+		if(m.children){
+			for(var j = 0; j < m.children.length; j++){
+				ctx.beginPath();
+				var b2 = m.children[j].box;
+				ctx.moveTo((b.x+b.w/2)*w,(b.y+b.h/2)*h);
+				ctx.lineTo((b2.x+b2.w/2)*w,(b2.y+b2.h/2)*h);
+				ctx.stroke();
+			}
 		}
 	}
+
 	ctx.restore();
 };
 
 FS.drawModules = function() {
+
+	FS.drawEdges();
 
 	for(var i = 0; i < FS.modules.length; i++){
 		var m = FS.modules[i];
