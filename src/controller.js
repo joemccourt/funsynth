@@ -14,8 +14,9 @@ FS.maxZIndex = 100;
 
 FS.modules = [];
 
-FS.addModule = function(moduleName) {
-	FS.modules.push(moduleName);
+FS.addModule = function(module) {
+	FS.sanitizeModule(module)
+	FS.modules.push(module);
 	FS.reorderModules();
 };
 
@@ -45,7 +46,7 @@ FS.startSession = function() {
 var moduleDisplay = {
 		'type': 'funDisplay',
 		'box': {x:0.25,y:0.25,w:0.3,h:0.2},
-		'fillStyle': 'rgb(255,200,200)',
+		'fillStyle': 'rgba(255,200,200,1)',
 		'name': 'demoFunction',
 		'eval': function(p){return p.x;},
 		'z-index': 2
@@ -56,7 +57,7 @@ FS.addModule(moduleDisplay);
 var moduleInputX = {
 		'type': 'input',
 		'box': {x:0.65,y:0.25,w:0.2,h:0.1},
-		'fillStyle': 'rgb(200,150,50)',
+		'fillStyle': 'rgba(200,150,50,1)',
 		'name': 'x',
 		'z-index': 1
 	};
@@ -66,7 +67,7 @@ FS.addModule(moduleInputX);
 var moduleInputT = {
 		'type': 'input',
 		'box': {x:0.15,y:0.25,w:0.2,h:0.1},
-		'fillStyle': 'rgb(200,50,200)',
+		'fillStyle': 'rgba(200,50,200,1)',
 		'name': 't',
 		'z-index': 1
 	};
@@ -76,7 +77,7 @@ FS.addModule(moduleInputT);
 var moduleSin = {
 		'type': 'node',
 		'box': {x:0.1,y:0.1,w:0.2,h:0.1},
-		'fillStyle': 'rgb(200,150,200)',
+		'fillStyle': 'rgba(200,150,200,1)',
 		'name': 'sin(x)',
 		'eval': function(p){return Math.sin(p.x);},
 		'z-index': 3
@@ -88,7 +89,7 @@ moduleDisplay.children = [moduleSin];
 // var moduleCos = {
 // 		'type': 'node',
 // 		'box': {x:0.6,y:0.1,w:0.25,h:0.1},
-// 		'fillStyle': 'rgb(150,150,50)',
+// 		'fillStyle': 'rgba(150,150,50,1)',
 // 		'name': 'cos(x)',
 // 		'eval': function(p){return Math.cos(p.x);},
 // 		'z-index': 0
@@ -97,7 +98,7 @@ moduleDisplay.children = [moduleSin];
 var moduleAdd = {
 		'type': 'node',
 		'box': {x:0.2,y:0.3,w:0.2,h:0.1},
-		'fillStyle': 'rgb(250,150,250)',
+		'fillStyle': 'rgba(250,150,250,1)',
 		'name': 'x+y',
 		'eval': function(p){return p.x+p.y;},
 		'z-index': 7
@@ -109,7 +110,7 @@ moduleSin.children = [moduleAdd];
 var moduleMul = {
 		'type': 'node',
 		'box': {x:0.6,y:0.3,w:0.2,h:0.1},
-		'fillStyle': 'rgb(250,150,150)',
+		'fillStyle': 'rgba(250,150,150,1)',
 		'name': 'x*y',
 		'eval': function(p){return p.x*p.y;},
 		'z-index': 5
@@ -120,7 +121,7 @@ FS.addModule(moduleMul);
 var modulePI = {
 		'type': 'node',
 		'box': {x:0.4,y:0.8,w:0.25,h:0.1},
-		'fillStyle': 'rgb(50,150,150)',
+		'fillStyle': 'rgba(50,150,150,1)',
 		'name': 'PI',
 		'eval': function(){return Math.PI;},
 		'z-index': 2
@@ -133,7 +134,7 @@ moduleMul.children = [modulePI, moduleInputX];
 	// {
 	// 	'type': 'input',
 	// 	'box': {x:0.3,y:0.4,w:0.2,h:0.1},
-	// 	'fillStyle': 'rgb(250,150,250)',
+	// 	'fillStyle': 'rgba(250,150,250,1)',
 	// 	'name': 'x',
 	// 	'eval': function(p){return p.x+p.y;},
 	// 	'z-index': 9
@@ -141,6 +142,48 @@ moduleMul.children = [modulePI, moduleInputX];
 
 // parent.children;
 
+
+	FS.setModulesIOPoints();
+};
+
+FS.sanitizeModule = function(module) {
+	if(typeof module !== 'object'){module = {};}
+
+	var defaultModule = {
+		'type': 'node',
+		'box': {x:0.4,y:0.4,w:0.2,h:0.2},
+		'fillStyle': 'rgba(128,128,128,1)',
+		'name': '0',
+		'eval': function(){return 0;},
+		'z-index': 0,
+		'children': []
+	};
+
+	for(var key in defaultModule){
+		if(defaultModule.hasOwnProperty(key) && module[key] == null){
+			module[key] = defaultModule[key];
+		}
+	}
+};
+
+FS.setModulesIOPoints = function() {
+	for(var i = 0; i < FS.modules.length; i++){
+		FS.setModuleIOPoints(FS.modules[i]);
+	}
+};
+
+FS.setModuleIOPoints = function(module) {
+	var outputPoints = [{x:0.45,y:0,w:0.1,h:0.1}];
+	var inputPoints = [];
+
+	for(var i = 0; i < module.children.length; i++){
+		var point = {y:0.9,w:0.1,h:0.1};
+		point.x = 0.45 + 0.25*(i+0.5-module.children.length/2);
+		inputPoints.push(point);
+	}
+
+	module.outputPoints = outputPoints;
+	module.inputPoints = inputPoints;
 };
 
 
@@ -176,8 +219,14 @@ FS.mousemove = function(x,y){
 		var d = FS.mouseDownDelta;
 		var m = FS.moduleSelected;
 		if(m && d){
-			m.box.x = x-d.x;
-			m.box.y = y-d.y;
+			var b = m.box;
+			if(FS.mouseDownType == "move"){
+				b.x = x-d.x;
+				b.y = y-d.y;
+			}else if(FS.mouseDownType == "scale"){
+				b.w = Math.max(0.03,x-b.x);
+				b.h = Math.max(0.03,y-b.y);
+			}
 		}
 	}
 };
@@ -195,6 +244,13 @@ FS.mousedown = function(x,y){
 			if(!FS.moduleSelected || FS.moduleSelected['z-index'] < m['z-index']){
 				FS.moduleSelected = FS.modules[i];
 				FS.mouseDownDelta = {x:x-b.x,y:y-b.y};
+				FS.mouseDownType = "move";
+
+				var xRel = (x-b.x)/b.w;
+				var yRel = (y-b.y)/b.h;
+				if(xRel > 0.9 && yRel > 0.9){
+					FS.mouseDownType = "scale";
+				}
 			}
 		}
 	}

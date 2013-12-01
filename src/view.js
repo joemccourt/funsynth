@@ -75,14 +75,35 @@ FS.drawNode = function(module) {
 	ctx.stroke();
 	ctx.fill();
 
-	var height = 0.4*Math.min(w*b.w,h*b.h);
-	ctx.textAlign = "center";
-	ctx.textBaseline = "middle";
-	ctx.font = height + "px Lucida Console";
-	ctx.fillStyle = 'black';
+	var points = module.inputPoints.concat(module.outputPoints);
+	for(var i = 0; i < points.length; i++) {
+		var bOffset = points[i];
+		ctx.fillStyle = 'rgba(0,0,0,1)';
+
+		ctx.beginPath();
+		ctx.lineTo((b.x+bOffset.x*b.w)*w,(b.y+bOffset.y*b.h)*h);
+		ctx.lineTo(((b.x+bOffset.x*b.w)+bOffset.w*b.w)*w,(b.y+bOffset.y*b.h)*h);
+		ctx.lineTo(((b.x+bOffset.x*b.w)+bOffset.w*b.w)*w,((b.y+bOffset.y*b.h)+bOffset.h*b.h)*h);
+		ctx.lineTo((b.x+bOffset.x*b.w)*w,((b.y+bOffset.y*b.h)+bOffset.h*b.h)*h);
+		ctx.closePath();
+		ctx.fill();
+	};
 
 	if(typeof module.value === "number"){
-		ctx.fillText(module.name + ": " + module.value.toPrecision(4),(b.x+b.w/2)*w,(b.y+b.h/2)*h);
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		ctx.fillStyle = 'black';
+		var text = module.name + ": " + module.value.toPrecision(4);
+		var height = 0.5*Math.min(w*b.w,h*b.h);
+		ctx.font = height + "px Lucida Console";
+		var metrics = ctx.measureText(text);
+
+		if(metrics.width > w*b.w){
+			height *= w*b.w/metrics.width;
+			ctx.font = height + "px Lucida Console";
+		}
+
+		ctx.fillText(text,(b.x+b.w/2)*w,(b.y+b.h/2)*h);
 	}
 
 	ctx.restore();
@@ -101,9 +122,34 @@ FS.drawEdges = function() {
 		if(m.children){
 			for(var j = 0; j < m.children.length; j++){
 				ctx.beginPath();
+				var bIn = m.inputPoints[j];
+				var cIn = {
+					x: (b.x+(bIn.x+bIn.w/2)*b.w)*w,
+					y: (b.y+(bIn.y+bIn.h/2)*b.h)*h
+				};
+
 				var b2 = m.children[j].box;
-				ctx.moveTo((b.x+b.w/2)*w,(b.y+b.h/2)*h);
-				ctx.lineTo((b2.x+b2.w/2)*w,(b2.y+b2.h/2)*h);
+				var bOut = m.children[j].outputPoints[0];
+
+				var cOut = {
+					x: (b2.x+(bOut.x+bOut.w/2)*b2.w)*w,
+					y: (b2.y+(bOut.y+bOut.h/2)*b2.h)*h
+				};
+
+				var deltaY = Math.abs(5*(cOut.y - cIn.y));
+
+				var ctrlOut = {
+					x: cOut.x,
+					y: cOut.y - b2.h*deltaY
+				};
+
+				var ctrlIn = {
+					x: cIn.x,
+					y: cIn.y + b.h*deltaY
+				};
+
+				ctx.moveTo(cIn.x,cIn.y);
+				ctx.bezierCurveTo(ctrlIn.x,ctrlIn.y,ctrlOut.x,ctrlOut.y,cOut.x,cOut.y);
 				ctx.stroke();
 			}
 		}
@@ -114,7 +160,6 @@ FS.drawEdges = function() {
 
 FS.drawModules = function() {
 
-	FS.drawEdges();
 
 	for(var i = 0; i < FS.modules.length; i++){
 		var m = FS.modules[i];
@@ -125,4 +170,5 @@ FS.drawModules = function() {
 			FS.drawFun(m);
 		}
 	}
+	FS.drawEdges();
 };

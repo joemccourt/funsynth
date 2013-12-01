@@ -41,7 +41,7 @@ FS.evalModule = function(module,variables){
 	if(module.type == "input"){
 		module.value = variables[module.name];
 	}else{
-		if(module.children){
+		if(module.children.length > 0){
 			if(module.children.length == 2){
 				var c1 = module.children[0];
 				var c2 = module.children[1];
@@ -54,5 +54,7 @@ FS.evalModule = function(module,variables){
 			module.value = module.eval();
 		}
 	}
+
+	// module.displayValue = 
 	return module.value;
 };
