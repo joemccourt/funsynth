@@ -38,6 +38,7 @@ FS.getFunValues = function(fun, inputData) {
 };
 
 FS.evalModule = function(module,variables){
+	if(typeof module === "undefined" || module == null){return 0;}
 	if(module.type == "input"){
 		module.value = variables[module.name];
 	}else{

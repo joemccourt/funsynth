@@ -128,8 +128,19 @@ FS.drawEdges = function() {
 					y: (b.y+(bIn.y+bIn.h/2)*b.h)*h
 				};
 
-				var b2 = m.children[j].box;
-				var bOut = m.children[j].outputPoints[0];
+				var b2, bOut;
+				var child = m.children[j];
+				if(typeof child === "undefined" || child == null){
+					if(FS.moduleSelected == m && FS.mouseDownRelinkIndex == j){
+						b2 = {x:FS.mousePos.x-0.02,y:FS.mousePos.y,w:0.04,h:0.04};
+						bOut = {x:0.5,y:0,w:0,h:0};
+					}else{
+						continue;
+					}
+				}else{
+					b2 = child.box;
+					bOut = child.outputPoints[0];
+				}
 
 				var cOut = {
 					x: (b2.x+(bOut.x+bOut.w/2)*b2.w)*w,
@@ -152,6 +163,18 @@ FS.drawEdges = function() {
 				ctx.bezierCurveTo(ctrlIn.x,ctrlIn.y,ctrlOut.x,ctrlOut.y,cOut.x,cOut.y);
 				ctx.stroke();
 			}
+		}
+	}
+
+
+	if(FS.mouseDownType == "relinkOutput" && FS.mouseState == "down"){
+		var m = FS.moduleSelected;
+		if(m){
+			var b = m.box;
+			var bOut = m.outputPoints[FS.mouseDownRelinkIndex];
+			ctx.moveTo(FS.mousePos.x*w,FS.mousePos.y*h);
+			ctx.lineTo((b.x+(bOut.x+bOut.w/2)*b.w)*w,(b.y+(bOut.y+bOut.h/2)*b.h)*h);
+			ctx.stroke();
 		}
 	}
 
