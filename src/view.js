@@ -65,6 +65,11 @@ FS.drawNode = function(module) {
 	var b = module.box;
 
 	ctx.fillStyle = module.fillStyle;
+	ctx.lineWidth = 1;
+
+	if(FS.moduleSelected == module){
+		ctx.lineWidth = 3;
+	}
 
 	ctx.beginPath();
 	ctx.lineTo(b.x*w,b.y*h);

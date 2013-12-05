@@ -131,6 +131,20 @@ FS.addModule(modulePI);
 moduleAdd.children = [moduleMul, moduleInputT];
 moduleMul.children = [modulePI, moduleInputX];
 
+
+
+var moduleConstant = {
+		'type': 'node',
+		'nodeType': 'constant',
+		'box': {x:0.2,y:0.7,w:0.25,h:0.1},
+		'fillStyle': 'rgba(50,150,150,1)',
+		'value': 2,
+		'name': 'Constant',
+		'eval': function(){return this.value;},
+		'z-index': 2
+	};
+
+FS.addModule(moduleConstant);
 	// {
 	// 	'type': 'input',
 	// 	'box': {x:0.3,y:0.4,w:0.2,h:0.1},
@@ -186,6 +200,57 @@ FS.setModuleIOPoints = function(module) {
 	module.inputPoints = inputPoints;
 };
 
+FS.createNewModule = function(type,nodeType){
+	var evalFunction = function(){return 0;};
+	var name = "";
+	var numInput = 0;
+	if(nodeType == "add"){
+		evalFunction = function(p){return p.x+p.y;};
+		name = "x+y";
+		numInput = 2;
+	}else if(nodeType == "mul"){
+		evalFunction = function(p){return p.x*p.y;};
+		name = "x*y";
+		numInput = 2;
+	}else if(nodeType == "pow"){
+		evalFunction = function(p){return Math.pow(p.x,p.y);};
+		name = "x^y";
+		numInput = 2;
+	}else if(nodeType == "sin"){
+		evalFunction = function(p){return Math.sin(p.x);};
+		name = "sin(x)";
+		numInput = 1;
+	}else if(nodeType == "exp"){
+		evalFunction = function(p){return Math.exp(p.x);};
+		name = "x+y";
+		numInput = 1;
+	}else if(nodeType == "constant"){
+		evalFunction = function(p){return p.x+p.y;};
+		name = "x+y";
+		numInput = 0;
+	}
+
+	var module = {
+			'type': type,
+			'nodeType': nodeType,
+			'box': {x:0.5,y:0.5,w:0.2,h:0.1},
+			'fillStyle': 'rgba(128,150,150,1)',
+			'name': name,
+			'value': 1,
+			'eval': evalFunction,
+			'children': [],
+			'z-index': FS.maxZIndex
+		};
+
+	for(var i = 0; i < numInput; i++){
+		module.children.push(undefined);
+	}
+
+	FS.maxZIndex++;
+	FS.addModule(module);
+	FS.setModuleIOPoints(module);
+	return module;
+};
 
 FS.gameLoop = function(time) {
 	var ctx = FS.ctx;
@@ -220,7 +285,12 @@ FS.mousemove = function(x,y){
 		var m = FS.moduleSelected;
 		if(m && d){
 			var b = m.box;
-			if(FS.mouseDownType == "move"){
+			if(FS.mouseDownType == "adjustValue"){
+				var p0 = FS.mouseDownPos;
+				var p = FS.mousePos;
+				var gain = 3.5;
+				m.value = m.value0 * Math.exp(-gain*(p.y-p0.y));
+			}else if(FS.mouseDownType == "move"){
 				b.x = x-d.x;
 				b.y = y-d.y;
 			}else if(FS.mouseDownType == "scale"){
@@ -233,6 +303,7 @@ FS.mousemove = function(x,y){
 
 FS.mousedown = function(x,y){
 	FS.mousePos = {'x':x,'y':y};
+	FS.mouseDownPos = {'x':x,'y':y};
 	FS.mouseState = "down";
 
 	FS.moduleSelected = undefined;
@@ -250,6 +321,9 @@ FS.mousedown = function(x,y){
 				var yRel = (y-b.y)/b.h;
 				if(xRel > 0.9 && yRel > 0.9){
 					FS.mouseDownType = "scale";
+				}else if(xRel > 0.5 && m.type=="node" && m.nodeType == "constant"){
+					FS.mouseDownType = "adjustValue";
+					m.value0 = m.value;
 				}
 
 				for(var j = 0; j < m.inputPoints.length; j++){
