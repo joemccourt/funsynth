@@ -186,8 +186,63 @@ FS.drawEdges = function() {
 	ctx.restore();
 };
 
+FS.drawMenu = function(m) {
+	var ctx = FS.ctx;
+	ctx.save();
+
+	var w = FS.canvas.width;
+	var h = FS.canvas.height;
+
+	var b = m.box;
+
+	ctx.fillStyle = "rgba(100,100,255,0.3)";
+	ctx.strokeStyle = "black";
+
+	ctx.beginPath();
+	ctx.lineTo(b.x*w,b.y*h);
+	ctx.lineTo((b.x+b.w)*w,b.y*h);
+	ctx.lineTo((b.x+b.w)*w,(b.y+b.h)*h);
+	ctx.lineTo(b.x*w,(b.y+b.h)*h);
+	ctx.closePath();
+	ctx.stroke();
+	ctx.fill();
+
+	var buttons = FS.menu.buttons;
+	var n = buttons.length;
+	for(var i = 0; i < n; i++){
+		var bOffset = {x:0.1,y:(0.1+i)/n,w:0.8,h:0.8/n};
+		var button = buttons[i];
+
+		ctx.fillStyle = "gray";
+		ctx.beginPath();
+		ctx.lineTo((b.x+bOffset.x*b.w)*w,(b.y+bOffset.y*b.h)*h);
+		ctx.lineTo(((b.x+bOffset.x*b.w)+bOffset.w*b.w)*w,(b.y+bOffset.y*b.h)*h);
+		ctx.lineTo(((b.x+bOffset.x*b.w)+bOffset.w*b.w)*w,((b.y+bOffset.y*b.h)+bOffset.h*b.h)*h);
+		ctx.lineTo((b.x+bOffset.x*b.w)*w,((b.y+bOffset.y*b.h)+bOffset.h*b.h)*h);
+		ctx.closePath();
+		ctx.fill();
+
+		ctx.textAlign = "center";
+		ctx.textBaseline = "middle";
+		ctx.fillStyle = 'black';
+		var text = button.display;
+		var height = 0.5*Math.min(w*b.w*bOffset.w,h*b.h*bOffset.h);
+		ctx.font = height + "px Lucida Console";
+		var metrics = ctx.measureText(text);
+
+		if(metrics.width > 0.8*w*b.w*bOffset.w){
+			height *= 0.8*w*b.w*bOffset.w/metrics.width;
+			ctx.font = height + "px Lucida Console";
+		}
+
+		ctx.fillText(text,((b.x+bOffset.x*b.w)+bOffset.w*b.w/2)*w,((b.y+bOffset.y*b.h)+bOffset.h*b.h/2)*h);
+
+	}
+};
+
 FS.drawModules = function() {
 
+	FS.drawEdges();
 
 	for(var i = 0; i < FS.modules.length; i++){
 		var m = FS.modules[i];
@@ -196,7 +251,8 @@ FS.drawModules = function() {
 			FS.drawNode(m);
 		}else if(m.type == 'funDisplay'){
 			FS.drawFun(m);
+		}else if(m.type == 'menu'){
+			FS.drawMenu(m);
 		}
 	}
-	FS.drawEdges();
 };
